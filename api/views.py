@@ -226,3 +226,92 @@ class Login(APIView):
             status=status.HTTP_200_OK
         )
 
+
+class DeleteUser(APIView):
+
+    def delete(self, request):
+        print("===== DELETE USER START =====")
+
+        data = request.data
+        print(f'[DEBUG] Requst data: {data}')
+
+        requester_id = data.get("requester_id") # who is requesting to delete
+        target_user_id = data.get("target_user_id")   # who should be deleted
+
+        # requried params check
+        if not requester_id or not target_user_id:
+            print("[ERROR] requester_id or user_id missing")
+            return Response(
+                {
+                    "status": "error",
+                    "message": "requester_id and user_id are required"
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # try to fetch requester
+        try:
+            requester = User.objects.get(id=requester_id)
+            print(f"[DEBUG] Requester found: id={requester.id}, role={requester.role.id}")
+        except User.DoesNotExist:
+            print("[ERROR] Requester not found")
+            return Response(
+                {
+                    "status": "error",
+                    "message": "Requester not found"
+                },
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+
+        # try to fetch targer user
+        try:
+            target_user = User.objects.get(id=target_user_id)
+            print(f"[DEBUG] Target user found: id={target_user.id}")
+        except User.DoesNotExist:
+            print("[ERROR] Target user not found")
+            return Response(
+                {
+                    "status": "error",
+                    "message": "User to delete not found"
+                },
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        # check authorization
+        is_self = requester.id == target_user.id
+        is_admin = requester.role.id == 1
+
+        if not (is_self or is_admin):
+            print("[ERROR] Unauthorized delete attempt")
+            return Response(
+                {
+                    "status": "error",
+                    "message": "You are not authorized to delete this user"
+                },
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        # delete user
+        try:
+            target_user.delete()
+            print(f"[SUCCESS] User deleted: id={target_user_id}")
+        except Exception as e:
+            print("[ERROR] Failed to delete user")
+            print(f"[ERROR DETAILS] {e}")
+            return Response(
+                {
+                    "status": "error",
+                    "message": "Failed to delete user"
+                },
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+        print("===== DELETE USER END =====")
+
+        return Response(
+            {
+                "status": "success",
+                "message": "User deleted successfully"
+            },
+            status=status.HTTP_200_OK
+        )
