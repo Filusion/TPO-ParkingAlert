@@ -315,3 +315,116 @@ class DeleteUser(APIView):
             },
             status=status.HTTP_200_OK
         )
+
+
+class EditUser(APIView):
+
+    def get(self, request):
+        print('===== EDIT USER GET START =====')
+
+        user_id = request.query_params.get('user_id')
+        print(f"[DEBUG] user_id param: {user_id}")
+
+        # no user_id in url
+        if not user_id:
+            return Response(
+                {
+                    "status": "error",
+                    "message": "user_id is required"
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # get data from user through user_id
+        try:
+            user = User.objects.get(id=user_id)
+            print(f"[DEBUG] User found: id={user.id}")
+        except User.DoesNotExist:
+            print("[ERROR] User not found")
+            return Response(
+                {
+                    "status": "error",
+                    "message": "User not found"
+                },
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        # return data in JSON format
+        response_data = {
+            "username": user.username,
+            "name": user.name,
+            "surname": user.surname,
+            "bio": user.bio,
+            "location": user.location,
+            "email": user.email,
+            "phone": user.phone,
+        }
+
+        print("[SUCCESS] User data returned")
+        print("===== EDIT USER GET END =====")
+
+        return Response(
+            {
+                "status": "success",
+                "data": response_data
+            },
+            status=status.HTTP_200_OK
+        )
+
+    def put(self, request):
+        print("===== EDIT USER PUT START =====")
+
+        data = request.data
+        print(f"[DEBUG] Request data: {data}")
+
+        requester_id = request.query_params.get('user_id')
+
+        # check requester_id
+        if not requester_id:
+            return Response(
+                {"message": "Unauthorized"},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+
+        # fetch user
+        try:
+            user = User.objects.get(id=requester_id)
+            print(f"[DEBUG] User found: id={user.id}")
+        except User.DoesNotExist:
+            return Response(
+                {"message": "Unauthorized"},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+
+        # fields allowed to be updated
+        updatable_fields = [
+            "username", "name", "surname",
+            "bio", "location", "email", "phone"
+        ]
+
+        # update fields
+        for field in updatable_fields:
+            if field in data:
+                old = getattr(user, field)
+                new = data.get(field)
+                setattr(user, field, new)
+                print(f"[DEBUG] Updated {field}: {old} -> {new}")
+
+        # save the changes
+        try:
+            user.save()
+            print("[SUCCESS] User updated")
+        except Exception as e:
+            print("[ERROR] Update failed")
+            print(e)
+            return Response(
+                {"message": "Failed to update user"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+        print("===== EDIT USER PUT END =====")
+
+        return Response(
+            {"message": "Profile updated successfully"},
+            status=status.HTTP_200_OK
+        )
