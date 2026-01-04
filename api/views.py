@@ -10,7 +10,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
 
-from api.models import User, Role, Image, SlovenskaMesta
+from api.models import User, Role, Image, SlovenskaMesta, ParkirnaMesta
 
 
 # Create your views here.
@@ -540,5 +540,136 @@ class SlovenskaMestaAPI(APIView):
 
         return Response(
             {"message": "City deleted"},
+            status=status.HTTP_200_OK
+        )
+
+
+class ParkirnaMestaAPI(APIView):
+
+    def get(self, request):
+        print("===== PARKIRNA MESTA GET =====")
+
+        data = request.data
+        print(f"[DEBUG] data={data}")
+
+        park_id = data.get("id")
+
+        if park_id:
+            try:
+                park = ParkirnaMesta.objects.get(id=park_id)
+                return Response(
+                    {
+                        "id": park.id,
+                        "ime": park.name,
+                        "latitude": park.latitude,
+                        "longitude": park.longitude
+                    },
+                    status=status.HTTP_200_OK
+                )
+            except ParkirnaMesta.DoesNotExist:
+                return Response(
+                    {"message": "Parking spot not found"},
+                    status=status.HTTP_404_NOT_FOUND
+                )
+
+        parks = ParkirnaMesta.objects.all()
+        result = [
+            {
+                "id": p.id,
+                "ime": p.name,
+                "latitude": p.latitude,
+                "longitude": p.longitude
+            }
+            for p in parks
+        ]
+
+        return Response(result, status=status.HTTP_200_OK)
+
+    def post(self, request):
+        print("===== PARKIRNA MESTA POST =====")
+
+        name = request.data.get("ime")
+        latitude = request.data.get("latitude")
+        longitude = request.data.get("longitude")
+
+        if not all([name, latitude, longitude]):
+            return Response(
+                {"message": "ime, latitude and longitude are required"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        park = ParkirnaMesta.objects.create(
+            name=name,
+            latitude=latitude,
+            longitude=longitude
+        )
+
+        return Response(
+            {
+                "message": "Parking spot created",
+                "id": park.id
+            },
+            status=status.HTTP_201_CREATED
+        )
+
+    def put(self, request):
+        print("===== PARKIRNA MESTA PUT =====")
+
+        park_id = request.data.get("id")
+        name = request.data.get("ime")
+        latitude = request.data.get("latitude")
+        longitude = request.data.get("longitude")
+
+        if not all([park_id, name, latitude, longitude]):
+            return Response(
+                {"message": "id, ime, latitude, longitude are required"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            park = ParkirnaMesta.objects.get(id=park_id)
+        except ParkirnaMesta.DoesNotExist:
+            return Response(
+                {"message": "Parking spot not found"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        if name is not None:
+            park.name = name
+        if latitude is not None:
+            park.latitude = latitude
+        if longitude is not None:
+            park.longitude = longitude
+
+        park.save()
+
+        return Response(
+            {"message": "Parking spot updated"},
+            status=status.HTTP_200_OK
+        )
+
+    def delete(self, request):
+        print("===== PARKIRNA MESTA DELETE =====")
+
+        park_id = request.data.get("id")
+
+        if not park_id:
+            return Response(
+                {"message": "id is required"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            park = ParkirnaMesta.objects.get(id=park_id)
+        except ParkirnaMesta.DoesNotExist:
+            return Response(
+                {"message": "Parking spot not found"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        park.delete()
+
+        return Response(
+            {"message": "Parking spot deleted"},
             status=status.HTTP_200_OK
         )
