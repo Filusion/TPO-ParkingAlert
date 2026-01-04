@@ -10,7 +10,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
 
-from api.models import User, Role, Image
+from api.models import User, Role, Image, SlovenskaMesta
 
 
 # Create your views here.
@@ -426,5 +426,119 @@ class EditUser(APIView):
 
         return Response(
             {"message": "Profile updated successfully"},
+            status=status.HTTP_200_OK
+        )
+
+
+class SlovenskaMestaAPI(APIView):
+
+    def get(self, request):
+        print("===== SLOVENSKA MESTA GET =====")
+
+        data = request.data
+        print(f"[DEBUG] data={data}")
+
+        city_id = data.get("id")
+
+        # --- get one ---
+        if city_id:
+            try:
+                city = SlovenskaMesta.objects.get(id=city_id)
+                return Response(
+                    {
+                        "id": city.id,
+                        "ime": city.name
+                    },
+                    status=status.HTTP_200_OK
+                )
+            except SlovenskaMesta.DoesNotExist:
+                return Response(
+                    {"message": "City not found"},
+                    status=status.HTTP_404_NOT_FOUND
+                )
+
+        # --- get all ---
+        cities = SlovenskaMesta.objects.all()
+        result = [{"id": c.id, "ime": c.name} for c in cities]
+
+        return Response(result, status=status.HTTP_200_OK)
+
+    def post(self, request):
+        print("===== SLOVENSKA MESTA POST =====")
+
+        ime = request.data.get("ime")
+        print(f"[DEBUG] ime={ime}")
+
+        if not ime:
+            return Response(
+                {"message": "ime is required"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        city = SlovenskaMesta.objects.create(name=ime)
+
+        return Response(
+            {
+                "message": "City created",
+                "id": city.id
+            },
+            status=status.HTTP_201_CREATED
+        )
+
+    def put(self, request):
+        print("===== SLOVENSKA MESTA PUT =====")
+
+        data = request.data
+        print(f"[DEBUG] data={data}")
+
+        city_id = data.get("id")
+        ime = data.get("ime")
+
+        if not city_id or not ime:
+            return Response(
+                {"message": "id and ime are required"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            city = SlovenskaMesta.objects.get(id=city_id)
+        except SlovenskaMesta.DoesNotExist:
+            return Response(
+                {"message": "City not found"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        city.name = ime
+        city.save()
+
+        return Response(
+            {"message": "City updated"},
+            status=status.HTTP_200_OK
+        )
+
+    def delete(self, request):
+        print("===== SLOVENSKA MESTA DELETE =====")
+
+        city_id = request.data.get("id")
+        print(f"[DEBUG] id={city_id}")
+
+        if not city_id:
+            return Response(
+                {"message": "id is required"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            city = SlovenskaMesta.objects.get(id=city_id)
+        except SlovenskaMesta.DoesNotExist:
+            return Response(
+                {"message": "City not found"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        city.delete()
+
+        return Response(
+            {"message": "City deleted"},
             status=status.HTTP_200_OK
         )
