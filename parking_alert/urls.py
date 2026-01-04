@@ -16,7 +16,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from api.views import Test, Signup, Login, DeleteUser, EditUser, SlovenskaMestaAPI, ParkirnaMestaAPI
+from api.views import Test, Signup, Login, DeleteUser, EditUser, SlovenskaMestaAPI, ParkirnaMestaAPI, SlovenskeUliceAPI
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -27,4 +27,5 @@ urlpatterns = [
     path('api/edit-user/', EditUser.as_view(), name='edit-user'),
     path('api/slovenska-mesta/', SlovenskaMestaAPI.as_view(), name='slovenska-mesta'),
     path('api/parkirna-mesta/', ParkirnaMestaAPI.as_view(), name='parkirna-mesta'),
+    path('api/slovenske-ulice/', SlovenskeUliceAPI.as_view(), name='slovenske-ulice'),
 ]

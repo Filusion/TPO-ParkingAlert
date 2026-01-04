@@ -10,7 +10,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
 
-from api.models import User, Role, Image, SlovenskaMesta, ParkirnaMesta
+from api.models import User, Role, Image, SlovenskaMesta, ParkirnaMesta, SlovenskeUlice
 
 
 # Create your views here.
@@ -671,5 +671,113 @@ class ParkirnaMestaAPI(APIView):
 
         return Response(
             {"message": "Parking spot deleted"},
+            status=status.HTTP_200_OK
+        )
+
+
+class SlovenskeUliceAPI(APIView):
+
+    def get(self, request):
+        print("===== SLOVENSKE ULICE GET =====")
+
+        data = request.data
+        print(f"[DEBUG] data={data}")
+
+        street_id = data.get("id")
+
+        if street_id:
+            try:
+                street = SlovenskeUlice.objects.get(id=street_id)
+                return Response(
+                    {
+                        "id": street.id,
+                        "ime": street.name
+                    },
+                    status=status.HTTP_200_OK
+                )
+            except SlovenskeUlice.DoesNotExist:
+                return Response(
+                    {"message": "Street not found"},
+                    status=status.HTTP_404_NOT_FOUND
+                )
+
+        streets = SlovenskeUlice.objects.all()
+        result = [{"id": s.id, "ime": s.name} for s in streets]
+
+        return Response(result, status=status.HTTP_200_OK)
+
+    def post(self, request):
+        print("===== SLOVENSKE ULICE POST =====")
+
+        ime = request.data.get("ime")
+        print(f"[DEBUG] ime={ime}")
+
+        if not ime:
+            return Response(
+                {"message": "ime is required"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        street = SlovenskeUlice.objects.create(name=ime)
+
+        return Response(
+            {
+                "message": "Street created",
+                "id": street.id
+            },
+            status=status.HTTP_201_CREATED
+        )
+
+    def put(self, request):
+        print("===== SLOVENSKE ULICE PUT =====")
+
+        street_id = request.data.get("id")
+        ime = request.data.get("ime")
+
+        if not street_id or not ime:
+            return Response(
+                {"message": "id and ime are required"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            street = SlovenskeUlice.objects.get(id=street_id)
+        except SlovenskeUlice.DoesNotExist:
+            return Response(
+                {"message": "Street not found"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        street.name = ime
+        street.save()
+
+        return Response(
+            {"message": "Street updated"},
+            status=status.HTTP_200_OK
+        )
+
+    def delete(self, request):
+        print("===== SLOVENSKE ULICE DELETE =====")
+
+        street_id = request.data.get("id")
+
+        if not street_id:
+            return Response(
+                {"message": "id is required"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            street = SlovenskeUlice.objects.get(id=street_id)
+        except SlovenskeUlice.DoesNotExist:
+            return Response(
+                {"message": "Street not found"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        street.delete()
+
+        return Response(
+            {"message": "Street deleted"},
             status=status.HTTP_200_OK
         )
