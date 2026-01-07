@@ -251,7 +251,14 @@ class DeleteUserSerializer(serializers.Serializer):
 
 class DeleteUser(APIView):
 
-    @extend_schema(request=DeleteUserSerializer)
+    @extend_schema(
+        parameters=[
+            OpenApiParameter("requester_id", int, location=OpenApiParameter.QUERY,
+                             description="ID of the user requesting deletion"),
+            OpenApiParameter("target_user_id", int, location=OpenApiParameter.QUERY,
+                             description="ID of the user to delete")
+        ]
+    )
     def delete(self, request):
         print("===== DELETE USER START =====")
 
@@ -579,7 +586,9 @@ class SlovenskaMestaAPI(APIView):
             status=status.HTTP_200_OK
         )
 
-    @extend_schema(request=SlovenskaMestaDeleteSerializer)
+    @extend_schema(
+        parameters=[OpenApiParameter("id", int, location=OpenApiParameter.QUERY, description="City ID to delete")]
+    )
     def delete(self, request):
         print("===== SLOVENSKA MESTA DELETE =====")
 
@@ -740,7 +749,10 @@ class ParkirnaMestaAPI(APIView):
             status=status.HTTP_200_OK
         )
 
-    @extend_schema(request=ParkirnaMestaDeleteSerializer)
+    @extend_schema(
+        parameters=[
+            OpenApiParameter("id", int, location=OpenApiParameter.QUERY, description="Parking spot ID to delete")]
+    )
     def delete(self, request):
         print("===== PARKIRNA MESTA DELETE =====")
 
@@ -873,7 +885,9 @@ class SlovenskeUliceAPI(APIView):
             status=status.HTTP_200_OK
         )
 
-    @extend_schema(request=SlovenskeUliceDeleteSerializer)
+    @extend_schema(
+        parameters=[OpenApiParameter("id", int, location=OpenApiParameter.QUERY, description="Street ID to delete")]
+    )
     def delete(self, request):
         print("===== SLOVENSKE ULICE DELETE =====")
 
