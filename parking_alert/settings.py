@@ -38,7 +38,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
-    'api'
+    'api',
+    'drf_spectacular',
 ]
 
 MIDDLEWARE = [
@@ -112,6 +113,11 @@ ALLOWED_HOSTS = [
     '127.0.0.1',
     'parkingalert-backend-dnenavazhgaye7h8.northeurope-01.azurewebsites.net',
 ]
+
+REST_FRAMEWORK = {
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+}
+
 
 
 # Internationalization
