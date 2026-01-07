@@ -2,7 +2,7 @@ import random
 from dataclasses import dataclass
 
 from django.shortcuts import render
-from drf_spectacular.utils import extend_schema
+from drf_spectacular.utils import extend_schema, OpenApiParameter
 from rest_framework.request import Request
 
 from django.contrib.auth.hashers import check_password
@@ -176,8 +176,14 @@ class Signup(APIView):
         )
 
 
+class LoginSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    password = serializers.CharField()
+
+
 class Login(APIView):
 
+    @extend_schema(request=LoginSerializer)
     def post(self, request):
         print('===== LOGIN START =====')
 
@@ -238,8 +244,14 @@ class Login(APIView):
         )
 
 
+class DeleteUserSerializer(serializers.Serializer):
+    requester_id = serializers.IntegerField()
+    target_user_id = serializers.IntegerField()
+
+
 class DeleteUser(APIView):
 
+    @extend_schema(request=DeleteUserSerializer)
     def delete(self, request):
         print("===== DELETE USER START =====")
 
@@ -328,8 +340,23 @@ class DeleteUser(APIView):
         )
 
 
+class EditUserSerializer(serializers.Serializer):
+    username = serializers.CharField(required=False)
+    name = serializers.CharField(required=False)
+    surname = serializers.CharField(required=False)
+    bio = serializers.CharField(required=False, allow_blank=True)
+    location = serializers.CharField(required=False, allow_blank=True)
+    email = serializers.EmailField(required=False)
+    phone = serializers.CharField(required=False, allow_blank=True)
+
+
 class EditUser(APIView):
 
+    @extend_schema(
+        parameters=[
+            OpenApiParameter("user_id", int, location=OpenApiParameter.QUERY, description="User ID to fetch")
+        ]
+    )
     def get(self, request):
         print('===== EDIT USER GET START =====')
 
@@ -382,6 +409,7 @@ class EditUser(APIView):
             status=status.HTTP_200_OK
         )
 
+    @extend_schema(request=EditUserSerializer)
     def put(self, request):
         print("===== EDIT USER PUT START =====")
 
@@ -441,8 +469,30 @@ class EditUser(APIView):
         )
 
 
+class SlovenskaMestaGetSerializer(serializers.Serializer):
+    id = serializers.IntegerField(required=False)
+
+
+class SlovenskaMestaPostSerializer(serializers.Serializer):
+    ime = serializers.CharField()
+
+
+class SlovenskaMestaPutSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    ime = serializers.CharField()
+
+
+class SlovenskaMestaDeleteSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+
+
 class SlovenskaMestaAPI(APIView):
 
+    @extend_schema(
+        parameters=[
+            OpenApiParameter("id", int, location=OpenApiParameter.QUERY, description="Optional city ID to fetch")
+        ]
+    )
     def get(self, request):
         print("===== SLOVENSKA MESTA GET =====")
 
@@ -474,6 +524,7 @@ class SlovenskaMestaAPI(APIView):
 
         return Response(result, status=status.HTTP_200_OK)
 
+    @extend_schema(request=SlovenskaMestaPostSerializer)
     def post(self, request):
         print("===== SLOVENSKA MESTA POST =====")
 
@@ -496,6 +547,7 @@ class SlovenskaMestaAPI(APIView):
             status=status.HTTP_201_CREATED
         )
 
+    @extend_schema(request=SlovenskaMestaPutSerializer)
     def put(self, request):
         print("===== SLOVENSKA MESTA PUT =====")
 
@@ -527,6 +579,7 @@ class SlovenskaMestaAPI(APIView):
             status=status.HTTP_200_OK
         )
 
+    @extend_schema(request=SlovenskaMestaDeleteSerializer)
     def delete(self, request):
         print("===== SLOVENSKA MESTA DELETE =====")
 
@@ -555,8 +608,34 @@ class SlovenskaMestaAPI(APIView):
         )
 
 
+class ParkirnaMestaGetSerializer(serializers.Serializer):
+    id = serializers.IntegerField(required=False)
+
+
+class ParkirnaMestaPostSerializer(serializers.Serializer):
+    ime = serializers.CharField()
+    latitude = serializers.FloatField()
+    longitude = serializers.FloatField()
+
+
+class ParkirnaMestaPutSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    ime = serializers.CharField()
+    latitude = serializers.FloatField()
+    longitude = serializers.FloatField()
+
+
+class ParkirnaMestaDeleteSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+
+
 class ParkirnaMestaAPI(APIView):
 
+    @extend_schema(
+        parameters=[
+            OpenApiParameter("id", int, location=OpenApiParameter.QUERY, description="Optional parking spot ID")
+        ]
+    )
     def get(self, request):
         print("===== PARKIRNA MESTA GET =====")
 
@@ -596,6 +675,7 @@ class ParkirnaMestaAPI(APIView):
 
         return Response(result, status=status.HTTP_200_OK)
 
+    @extend_schema(request=ParkirnaMestaPostSerializer)
     def post(self, request):
         print("===== PARKIRNA MESTA POST =====")
 
@@ -623,6 +703,7 @@ class ParkirnaMestaAPI(APIView):
             status=status.HTTP_201_CREATED
         )
 
+    @extend_schema(request=ParkirnaMestaPutSerializer)
     def put(self, request):
         print("===== PARKIRNA MESTA PUT =====")
 
@@ -659,6 +740,7 @@ class ParkirnaMestaAPI(APIView):
             status=status.HTTP_200_OK
         )
 
+    @extend_schema(request=ParkirnaMestaDeleteSerializer)
     def delete(self, request):
         print("===== PARKIRNA MESTA DELETE =====")
 
@@ -686,8 +768,30 @@ class ParkirnaMestaAPI(APIView):
         )
 
 
+class SlovenskeUliceGetSerializer(serializers.Serializer):
+    id = serializers.IntegerField(required=False)
+
+
+class SlovenskeUlicePostSerializer(serializers.Serializer):
+    ime = serializers.CharField()
+
+
+class SlovenskeUlicePutSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    ime = serializers.CharField()
+
+
+class SlovenskeUliceDeleteSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+
+
 class SlovenskeUliceAPI(APIView):
 
+    @extend_schema(
+        parameters=[
+            OpenApiParameter("id", int, location=OpenApiParameter.QUERY, description="Optional street ID")
+        ]
+    )
     def get(self, request):
         print("===== SLOVENSKE ULICE GET =====")
 
@@ -717,6 +821,7 @@ class SlovenskeUliceAPI(APIView):
 
         return Response(result, status=status.HTTP_200_OK)
 
+    @extend_schema(request=SlovenskeUlicePostSerializer)
     def post(self, request):
         print("===== SLOVENSKE ULICE POST =====")
 
@@ -739,6 +844,7 @@ class SlovenskeUliceAPI(APIView):
             status=status.HTTP_201_CREATED
         )
 
+    @extend_schema(request=SlovenskeUlicePutSerializer)
     def put(self, request):
         print("===== SLOVENSKE ULICE PUT =====")
 
@@ -767,6 +873,7 @@ class SlovenskeUliceAPI(APIView):
             status=status.HTTP_200_OK
         )
 
+    @extend_schema(request=SlovenskeUliceDeleteSerializer)
     def delete(self, request):
         print("===== SLOVENSKE ULICE DELETE =====")
 
