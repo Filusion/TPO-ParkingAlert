@@ -2,14 +2,14 @@ import random
 from dataclasses import dataclass
 
 from django.shortcuts import render
+from drf_spectacular.utils import extend_schema
 from rest_framework.request import Request
 
 from django.contrib.auth.hashers import check_password
 from django.contrib.auth.hashers import make_password
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework import status
-
+from rest_framework import status, serializers
 from api.models import User, Role, Image, SlovenskaMesta, ParkirnaMesta, SlovenskeUlice
 
 
@@ -39,8 +39,19 @@ class Test(APIView):
         )
 
 
+class SignupSerializer(serializers.Serializer):
+    username = serializers.CharField()
+    password = serializers.CharField()
+    name = serializers.CharField()
+    surname = serializers.CharField()
+    bio = serializers.CharField(required=False, allow_blank=True)
+    email = serializers.EmailField()
+    phone = serializers.CharField(required=False, allow_blank=True)
+
+
 class Signup(APIView):
 
+    @extend_schema(request=SignupSerializer)
     def post(self, request):
         print('===== SIGNUP START =====')
 
